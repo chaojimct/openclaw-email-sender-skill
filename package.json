@@ -1,0 +1,24 @@
+{
+  "name": "openclaw-email-sender-skill",
+  "version": "1.0.0",
+  "description": "OpenClaw skill for sending emails via SMTP",
+  "main": "scripts/send_email.js",
+  "scripts": {
+    "test": "node scripts/send_email.js --help"
+  },
+  "keywords": [
+    "openclaw",
+    "skill",
+    "email",
+    "smtp",
+    "nodemailer"
+  ],
+  "author": "chaojimct",
+  "license": "MIT",
+  "dependencies": {
+    "nodemailer": "^6.9.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
