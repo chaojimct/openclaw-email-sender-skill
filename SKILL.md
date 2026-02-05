@@ -34,7 +34,36 @@ node scripts/send_email.js \
 
 SMTP credentials can be provided via:
 
-1. **Environment variables** (recommended):
+1. **YAML config file** (recommended for multiple accounts):
+   
+   Create `email-config.yml` in the skill directory:
+   ```yaml
+   default: gmail  # Default account to use
+   
+   accounts:
+     gmail:
+       host: smtp.gmail.com
+       port: 587
+       secure: false
+       user: your-email@gmail.com
+       pass: your-app-password
+       from: your-email@gmail.com
+     
+     work:
+       host: smtp.company.com
+       port: 587
+       secure: false
+       user: you@company.com
+       pass: your-password
+       from: you@company.com
+   ```
+   
+   Then use with `--account`:
+   ```bash
+   node scripts/send_email.js --account gmail --to user@example.com --subject "Test" --text "Hello"
+   ```
+
+2. **Environment variables**:
    ```bash
    export EMAIL_HOST=smtp.gmail.com
    export EMAIL_PORT=587
@@ -43,9 +72,7 @@ SMTP credentials can be provided via:
    export EMAIL_FROM=your-email@gmail.com
    ```
 
-2. **Command-line arguments** (see Usage below)
-
-3. **Config file** (see references/smtp-providers.md for examples)
+3. **Command-line arguments** (see Usage below)
 
 ## Usage
 
@@ -123,6 +150,24 @@ node scripts/send_email.js \
   --subject "Weekly Newsletter" \
   --html "$(cat newsletter.html)" \
   --from "newsletter@company.com"
+```
+
+### Use Different Accounts
+
+With config file, switch between accounts easily:
+
+```bash
+# Send from Gmail
+node scripts/send_email.js --account gmail \
+  --to "friend@example.com" --subject "Personal" --text "Hi!"
+
+# Send from work email
+node scripts/send_email.js --account work \
+  --to "colleague@company.com" --subject "Work Update" --text "Status report"
+
+# Use default account (no --account needed if default is set in config)
+node scripts/send_email.js \
+  --to "user@example.com" --subject "Hello" --text "Using default account"
 ```
 
 ## Common SMTP Providers

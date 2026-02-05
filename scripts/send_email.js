@@ -16,6 +16,34 @@
 const nodemailer = require('nodemailer');
 const fs = require('fs');
 const path = require('path');
+const yaml = require('js-yaml');
+
+// Load configuration from YAML file
+function loadConfig(configPath) {
+  try {
+    const configFile = fs.readFileSync(configPath, 'utf8');
+    return yaml.load(configFile);
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return null; // Config file doesn't exist, that's okay
+    }
+    throw new Error(`Failed to load config file: ${error.message}`);
+  }
+}
+
+// Get account configuration from config file
+function getAccountConfig(config, accountName) {
+  if (!config || !config.accounts) {
+    return null;
+  }
+  
+  const account = config.accounts[accountName];
+  if (!account) {
+    throw new Error(`Account '${accountName}' not found in config file`);
+  }
+  
+  return account;
+}
 
 // Parse command-line arguments
 function parseArgs() {
@@ -32,6 +60,8 @@ function parseArgs() {
     from: process.env.EMAIL_FROM,
     secure: false,
     tls: true,
+    configPath: path.join(__dirname, '..', 'email-config.yml'),
+    account: null,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -109,6 +139,14 @@ function parseArgs() {
         options.priority = next;
         i++;
         break;
+      case '--account':
+        options.account = next;
+        i++;
+        break;
+      case '--config':
+        options.configPath = next;
+        i++;
+        break;
       case '--help':
       case '-h':
         showHelp();
@@ -144,6 +182,8 @@ Optional:
   --priority <level>     Email priority (low, normal, high)
 
 SMTP Configuration:
+  --account <name>       Use account from config file (e.g., gmail, qq, work)
+  --config <path>        Path to YAML config file (default: ./email-config.yml)
   --host <host>          SMTP server (default: EMAIL_HOST env var)
   --port <port>          SMTP port (default: EMAIL_PORT or 587)
   --user <username>      SMTP username (default: EMAIL_USER env var)
@@ -287,6 +327,33 @@ async function sendEmail(options) {
 // Main
 async function main() {
   const options = parseArgs();
+
+  // Load config file if it exists
+  const config = loadConfig(options.configPath);
+  
+  // Apply account configuration if specified
+  if (options.account || (config && config.default && !options.host)) {
+    const accountName = options.account || config.default;
+    const accountConfig = getAccountConfig(config, accountName);
+    
+    if (accountConfig) {
+      console.log(`✓ Using account: ${accountName}`);
+      
+      // Apply account settings (command-line args take precedence)
+      if (!options.host) options.host = accountConfig.host;
+      if (!options.port || options.port === '587') options.port = accountConfig.port?.toString() || '587';
+      if (!options.user) options.user = accountConfig.user;
+      if (!options.pass) options.pass = accountConfig.pass;
+      if (!options.from) options.from = accountConfig.from;
+      if (accountConfig.replyTo && !options.replyTo) options.replyTo = accountConfig.replyTo;
+      
+      // Apply secure/tls settings
+      if (accountConfig.secure !== undefined) {
+        options.secure = accountConfig.secure;
+        options.tls = !accountConfig.secure;
+      }
+    }
+  }
 
   // Validate
   const errors = validateOptions(options);

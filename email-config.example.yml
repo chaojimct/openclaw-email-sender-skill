@@ -1,0 +1,58 @@
+# Email Configuration File
+# Copy this to email-config.yml and update with your settings
+
+# Default account (used when --account is not specified)
+default: gmail
+
+# Email accounts configuration
+accounts:
+  gmail:
+    host: smtp.gmail.com
+    port: 587
+    secure: false
+    user: your-email@gmail.com
+    pass: your-app-password
+    from: your-email@gmail.com
+    
+  qq:
+    host: smtp.qq.com
+    port: 587
+    secure: false
+    user: your-qq@qq.com
+    pass: your-authorization-code
+    from: your-qq@qq.com
+    
+  163:
+    host: smtp.163.com
+    port: 465
+    secure: true
+    user: your-email@163.com
+    pass: your-authorization-code
+    from: your-email@163.com
+    
+  outlook:
+    host: smtp-mail.outlook.com
+    port: 587
+    secure: false
+    user: your-email@outlook.com
+    pass: your-password
+    from: your-email@outlook.com
+    
+  work:
+    host: smtp.company.com
+    port: 587
+    secure: false
+    user: you@company.com
+    pass: your-password
+    from: you@company.com
+    replyTo: support@company.com
+
+# You can add as many accounts as needed
+# Each account can have these fields:
+#   host: SMTP server hostname (required)
+#   port: SMTP server port (required)
+#   secure: true for SSL (port 465), false for STARTTLS (port 587)
+#   user: SMTP username (required)
+#   pass: SMTP password (required)
+#   from: Default sender email (required)
+#   replyTo: Optional reply-to address

@@ -1,137 +1,208 @@
 # Email Sender Skill for OpenClaw
 
-An OpenClaw skill for sending emails via SMTP with attachment support.
+Send emails via SMTP with support for attachments, HTML content, and multiple accounts.
 
 ## Features
 
-- ✉️ Send emails via any SMTP server
-- 📎 Attachment support (multiple files)
-- 🌍 Multiple recipients (to, cc, bcc)
-- 🎨 HTML and plain text content
-- 🔒 TLS/SSL security
-- 🇨🇳 Chinese email providers supported (QQ, 163, Aliyun, etc.)
-
-## Installation
-
-1. Install the skill:
-   ```bash
-   openclaw skills install ./email-sender.skill
-   ```
-
-2. Install dependencies (if not auto-installed):
-   ```bash
-   cd ~/.openclaw/skills/email-sender
-   npm install
-   ```
-
-3. Configure SMTP credentials (choose one method):
-
-   **Option A: Environment variables** (recommended)
-   ```bash
-   export EMAIL_HOST=smtp.gmail.com
-   export EMAIL_PORT=587
-   export EMAIL_USER=your-email@gmail.com
-   export EMAIL_PASS=your-app-password
-   export EMAIL_FROM=your-email@gmail.com
-   ```
-
-   **Option B: Command-line arguments**
-   ```bash
-   node scripts/send_email.js \
-     --host smtp.gmail.com \
-     --port 587 \
-     --user your-email@gmail.com \
-     --pass your-app-password \
-     --from your-email@gmail.com \
-     --to recipient@example.com \
-     --subject "Test" \
-     --text "Hello"
-   ```
+- ✅ **Multiple email accounts** - Manage multiple SMTP accounts in one config file
+- ✅ **Attachments** - Send files with your emails
+- ✅ **HTML support** - Send rich HTML emails
+- ✅ **Multiple recipients** - To, CC, BCC support
+- ✅ **Popular providers** - Pre-configured examples for Gmail, QQ, 163, Outlook, etc.
 
 ## Quick Start
 
-Send a simple email:
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure Your Email Accounts
+
+Copy the example config:
+
+```bash
+cp email-config.example.yml email-config.yml
+```
+
+Edit `email-config.yml` with your SMTP credentials:
+
+```yaml
+default: gmail
+
+accounts:
+  gmail:
+    host: smtp.gmail.com
+    port: 587
+    secure: false
+    user: your-email@gmail.com
+    pass: your-app-password  # Use App Password, not regular password!
+    from: your-email@gmail.com
+```
+
+### 3. Send Your First Email
 
 ```bash
 node scripts/send_email.js \
-  --to recipient@example.com \
+  --account gmail \
+  --to "recipient@example.com" \
+  --subject "Hello from OpenClaw" \
+  --text "This is a test email"
+```
+
+## Usage
+
+### Basic Email
+
+```bash
+node scripts/send_email.js \
+  --to "user@example.com" \
   --subject "Hello" \
-  --text "This is the email body"
+  --text "Email body here"
 ```
 
-Send with attachment:
+### With Attachments
 
 ```bash
 node scripts/send_email.js \
-  --to user@example.com \
+  --to "user@example.com" \
   --subject "Report" \
-  --html "<h1>Monthly Report</h1><p>See attached.</p>" \
-  --attach /path/to/report.pdf
+  --html "<h1>Monthly Report</h1>" \
+  --attach "./report.pdf"
 ```
 
-## Supported Providers
+### Multiple Recipients
 
-Pre-configured examples for:
-- Gmail (Google)
+```bash
+node scripts/send_email.js \
+  --to "alice@example.com" \
+  --to "bob@example.com" \
+  --cc "manager@example.com" \
+  --subject "Team Update" \
+  --text "Meeting at 3pm"
+```
+
+### Switch Accounts
+
+```bash
+# Use Gmail account
+node scripts/send_email.js --account gmail \
+  --to "friend@example.com" --subject "Personal" --text "Hi!"
+
+# Use work account
+node scripts/send_email.js --account work \
+  --to "colleague@company.com" --subject "Work" --text "Update"
+```
+
+## Configuration
+
+### Config File (Recommended)
+
+Create `email-config.yml`:
+
+```yaml
+default: gmail  # Default account when --account is not specified
+
+accounts:
+  gmail:
+    host: smtp.gmail.com
+    port: 587
+    secure: false
+    user: your-email@gmail.com
+    pass: your-app-password
+    from: your-email@gmail.com
+  
+  qq:
+    host: smtp.qq.com
+    port: 587
+    secure: false
+    user: your-qq@qq.com
+    pass: your-authorization-code
+    from: your-qq@qq.com
+  
+  work:
+    host: smtp.company.com
+    port: 587
+    secure: false
+    user: you@company.com
+    pass: your-password
+    from: you@company.com
+    replyTo: support@company.com
+```
+
+### Environment Variables
+
+```bash
+export EMAIL_HOST=smtp.gmail.com
+export EMAIL_PORT=587
+export EMAIL_USER=your-email@gmail.com
+export EMAIL_PASS=your-app-password
+export EMAIL_FROM=your-email@gmail.com
+```
+
+### Command-Line Arguments
+
+All SMTP settings can be provided via command-line:
+
+```bash
+node scripts/send_email.js \
+  --host smtp.gmail.com \
+  --port 587 \
+  --user your-email@gmail.com \
+  --pass your-app-password \
+  --from your-email@gmail.com \
+  --to recipient@example.com \
+  --subject "Test" \
+  --text "Hello"
+```
+
+## SMTP Provider Setup
+
+See [references/smtp-providers.md](references/smtp-providers.md) for detailed setup instructions for:
+
+- Gmail (requires App Password)
+- QQ Mail (requires authorization code)
+- 163 Mail (requires authorization code)
 - Outlook / Office 365
 - Yahoo Mail
-- QQ Mail (腾讯邮箱)
-- 163 Mail (网易邮箱)
-- SendGrid
-- Mailgun
-- Amazon SES
-- Aliyun DirectMail
-- Tencent Exmail (腾讯企业邮箱)
-- Any custom SMTP server
+- SendGrid / Mailgun / Amazon SES
+- Custom SMTP servers
 
-See `references/smtp-providers.md` for detailed configuration examples.
+## Options
 
-## Usage with OpenClaw
+Run `node scripts/send_email.js --help` for full options list.
 
-Once installed, you can ask OpenClaw to send emails:
+### Key Options
 
-> "Send an email to john@example.com with subject 'Meeting Tomorrow' and body 'Don't forget the 3pm meeting'"
+- `--account <name>` - Use account from config file
+- `--config <path>` - Custom config file path
+- `--to <email>` - Recipient (can repeat)
+- `--subject <text>` - Email subject
+- `--text <text>` - Plain text body
+- `--html <html>` - HTML body
+- `--attach <path>` - Attach file (can repeat)
+- `--cc <email>` - CC recipient
+- `--bcc <email>` - BCC recipient
 
-> "Email the report.pdf file to my manager at boss@company.com"
+## Troubleshooting
 
-> "Send a newsletter to alice@example.com, bob@example.com with the content from newsletter.html"
+**Authentication failed?**
+- For Gmail: Use [App Password](https://support.google.com/accounts/answer/185833), enable 2FA first
+- For QQ/163: Generate authorization code in email settings
 
-## Testing
+**Connection timeout?**
+- Check host and port (587 for STARTTLS, 465 for SSL)
+- Verify firewall settings
 
-Test your SMTP configuration:
-
-```bash
-node scripts/send_email.js \
-  --to your-email@example.com \
-  --subject "SMTP Test" \
-  --text "If you receive this, your SMTP configuration is working!"
-```
-
-## Security Notes
-
-- **Gmail users**: Use [App Passwords](https://support.google.com/accounts/answer/185833), not your regular password
-- **QQ/163 users**: Use authorization codes (授权码) from email settings
-- **Never commit passwords**: Use environment variables or secure credential storage
-
-## Contributing
-
-Contributions welcome! Please submit pull requests to:
-https://github.com/chaojimct/openclaw-email-sender-skill
+**SSL/TLS errors?**
+- Try toggling `secure: true/false` in config
+- Port 587 → `secure: false`, Port 465 → `secure: true`
 
 ## License
 
-MIT License - see LICENSE file for details
+MIT
 
 ## Author
 
-Created by chaojimct (chaoji000010@163.com)
-
-## Changelog
-
-### v1.0.0 (2026-02-05)
-- Initial release
-- SMTP email sending with nodemailer
-- Attachment support
-- Multiple recipient support
-- HTML and plain text content
-- Support for major email providers
+chaojimct
